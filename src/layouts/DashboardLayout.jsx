@@ -4,12 +4,16 @@ import { DashboardLayout as ToolpadDashboardLayout } from '@toolpad/core/Dashboa
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { Box, useTheme } from '@mui/material';
 
+import { useSelector, useDispatch } from 'react-redux';
+import { selectDarkMode, toggleTheme } from '../store/slices/themeSlice';
+import { selectCurrentUser, selectIsAuthenticated, logout, setCredentials } from '../store/slices/authSlice';
+
 // Custom slot components
 import CustomAppTitle from './components/CustomAppTitle.jsx';
 import CustomToolbarActions from './components/CustomToolbarActions.jsx';
 import CustomAccount from './components/CustomAccount';
 import SidebarFooter from './components/SidebarFooter.jsx';
-import { useSession } from '../context/SessionContext';
+// SessionContext import removed usage
 
 // Config imports
 import { NAVIGATION_CONFIG, BRANDING_CONFIG, SIDEBAR_CONFIG } from '../config';
@@ -28,13 +32,34 @@ const BRANDING = {
 /**
  * ToolbarActionsWrapper - Wraps ToolbarActions with Account component
  */
-function ToolbarActionsWrapper({ darkMode, onToggleDarkMode }) {
-  const { session, signIn, signOut } = useSession();
+
+function ToolbarActionsWrapper() {
+  const dispatch = useDispatch();
+  const darkMode = useSelector(selectDarkMode);
+  const user = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  
+  const handleToggleDarkMode = () => {
+    dispatch(toggleTheme());
+  };
+
+  const handleSignIn = () => {
+      // For now, mock sign-in just to verify flow, typically handled by Login page
+      // dispatch(setCredentials({ user: { name: 'Test User', email: 'test@example.com', role: 'admin' }, token: 'mock-token' }));
+      // But actually, CustomAuth might trigger a redirect or modal.
+      console.log("Sign in clicked");
+  };
+
+  const handleSignOut = () => {
+    dispatch(logout());
+  };
+
+  const session = isAuthenticated ? { user } : null;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <CustomToolbarActions darkMode={darkMode} onToggleDarkMode={onToggleDarkMode} />
-      <CustomAccount session={session} onSignIn={signIn} onSignOut={signOut} />
+      <CustomToolbarActions darkMode={darkMode} onToggleDarkMode={handleToggleDarkMode} />
+      <CustomAccount session={session} onSignIn={handleSignIn} onSignOut={handleSignOut} />
     </Box>
   );
 }
@@ -43,11 +68,16 @@ function ToolbarActionsWrapper({ darkMode, onToggleDarkMode }) {
  * DashboardLayout - Main layout component using Toolpad Core
  * Uses custom slots for appTitle, toolbarActions, and sidebarFooter
  */
-function DashboardLayout({ darkMode, onToggleDarkMode }) {
+
+function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { session } = useSession();
   const theme = useTheme();
+  
+  // Redux state
+  const user = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const session = isAuthenticated ? { user } : null;
 
   // Create router object for AppProvider
   const router = React.useMemo(
@@ -61,8 +91,8 @@ function DashboardLayout({ darkMode, onToggleDarkMode }) {
 
   // Memoized toolbar actions component
   const MemoizedToolbarActions = React.useCallback(
-    () => <ToolbarActionsWrapper darkMode={darkMode} onToggleDarkMode={onToggleDarkMode} />,
-    [darkMode, onToggleDarkMode]
+    () => <ToolbarActionsWrapper />,
+    []
   );
 
   return (

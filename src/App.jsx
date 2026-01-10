@@ -1,14 +1,10 @@
 import * as React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import DashboardLayout from './layouts/DashboardLayout';
-import Dashboard from './pages/Dashboard';
-import Orders from './pages/Orders';
-import Users from './pages/Users';
-import Reports from './pages/Reports';
-import Settings from './pages/Settings';
-import Integrations from './pages/Integrations';
-import { SessionProvider } from './context/SessionContext';
+import { Provider, useSelector } from 'react-redux';
+import { store } from './store';
+import { router } from './routes';
+import { selectDarkMode } from './store/slices/themeSlice';
 import { THEME_CONFIG } from './config';
 
 /**
@@ -59,56 +55,23 @@ function createThemeFromConfig(mode) {
 const lightTheme = createThemeFromConfig('light');
 const darkTheme = createThemeFromConfig('dark');
 
-function App() {
-  // Dark mode state - persisted to localStorage, default from config
-  const [darkMode, setDarkMode] = React.useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      return JSON.parse(saved);
-    }
-    return THEME_CONFIG.defaultMode === 'dark';
-  });
-
-  // Toggle dark mode handler
-  const handleToggleDarkMode = React.useCallback(() => {
-    setDarkMode((prev) => {
-      const newValue = !prev;
-      localStorage.setItem('darkMode', JSON.stringify(newValue));
-      return newValue;
-    });
-  }, []);
-
-  const theme = darkMode ? darkTheme : lightTheme;
+function AppContent() {
+  const darkMode = useSelector(selectDarkMode);
+  const theme = React.useMemo(() => (darkMode ? darkTheme : lightTheme), [darkMode]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SessionProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <DashboardLayout
-                  darkMode={darkMode}
-                  onToggleDarkMode={handleToggleDarkMode}
-                />
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="users" element={<Users />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="reports/sales" element={<Reports />} />
-              <Route path="reports/traffic" element={<Reports />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="integrations" element={<Integrations />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </SessionProvider>
+      <RouterProvider router={router} />
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 
