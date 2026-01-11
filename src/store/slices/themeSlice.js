@@ -1,13 +1,18 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { THEME_CONFIG } from '../../config';
+// ==================== UPDATED THEME SLICE ====================
+// store/slices/themeSlice.js
 
-// Initial state from config or localStorage
+import { createSlice } from '@reduxjs/toolkit';
+import { setStorage, getStorage, STORAGE_KEYS } from '../../utils/storage';
+
+const THEME_STORAGE_KEY = 'theme_mode';
+
+// Initial state from localStorage or default
 const getInitialMode = () => {
-    const saved = localStorage.getItem('darkMode');
+    const saved = getStorage(THEME_STORAGE_KEY);
     if (saved !== null) {
-        return JSON.parse(saved);
+        return saved;
     }
-    return THEME_CONFIG.defaultMode === 'dark';
+    return false; // default to light mode
 };
 
 const themeSlice = createSlice({
@@ -18,17 +23,20 @@ const themeSlice = createSlice({
     reducers: {
         toggleTheme: (state) => {
             state.darkMode = !state.darkMode;
-            localStorage.setItem('darkMode', JSON.stringify(state.darkMode));
+            setStorage(THEME_STORAGE_KEY, state.darkMode);
         },
-        setTheme: (state, action) => {
+        setThemeMode: (state, action) => {
             state.darkMode = action.payload;
-            localStorage.setItem('darkMode', JSON.stringify(state.darkMode));
+            setStorage(THEME_STORAGE_KEY, action.payload);
         },
     },
 });
 
-export const { toggleTheme, setTheme } = themeSlice.actions;
+export const { toggleTheme, setThemeMode } = themeSlice.actions;
 
-export const selectDarkMode = (state) => state.theme.darkMode;
+// Selectors
+export const selectTheme = (state) => state.theme;
+export const selectThemeDarkMode = (state) => state.theme.darkMode;
+export const selectThemeMode = (state) => state.theme.darkMode ? 'dark' : 'light';
 
 export default themeSlice.reducer;

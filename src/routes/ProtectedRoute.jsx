@@ -1,28 +1,47 @@
+// ==================== PROTECTED ROUTE ====================
+// components/routes/ProtectedRoute.jsx
+
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectCurrentUser, selectIsAuthenticated } from '../store/slices/authSlice';
+import { Box, CircularProgress } from '@mui/material';
+import { selectAuthUser, selectAuthIsAuthenticated, selectAuthIsLoading } from '../store/slices/authSlice';
 
 /**
- * ProtectedRoute Wrapper
- * Checks authentication and role-based access
+ * ProtectedRoute with loading state
  */
-const ProtectedRoute = ({ allowedRoles = [] }) => {
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectCurrentUser);
+export const ProtectedRoute = ({ allowedRoles = [] }) => {
+  const isAuthenticated = useSelector(selectAuthIsAuthenticated);
+  const user = useSelector(selectAuthUser);
+  const loading = useSelector(selectAuthIsLoading);
   const location = useLocation();
 
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Not authenticated
   if (!isAuthenticated) {
-    // Redirect to login page with return url
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Check role authorization
   if (allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
-    // Role not authorized, redirect to unauthorized page or dashboard
     return <Navigate to="/unauthorized" replace />;
   }
 
   return <Outlet />;
 };
 
-export default ProtectedRoute;

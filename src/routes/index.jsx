@@ -1,30 +1,35 @@
+// ==================== ROLE-BASED ROUTES ====================
+// routes/index.jsx
+
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../routes/ProtectedRoute';
+import { UnauthorizedPage } from '../pages/public/Unauthorized';
 import DashboardLayout from '../layouts/DashboardLayout';
-import ProtectedRoute from './ProtectedRoute';
 
 // Pages
+import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
-import Orders from '../pages/Orders';
 import Users from '../pages/Users';
+// import Books from '../pages/Books';
+// import Borrowings from '../pages/Borrowings';
 import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
-import Integrations from '../pages/Integrations';
-import Login from '../pages/Login'; // Import valid login page
 
+// Roles
 import { ROLES } from '../config/roles';
 
-// Auth Pages (Placeholder for now)
-const Unauthorized = () => <div>Unauthorized Access</div>;
-
 export const router = createBrowserRouter([
+  // Public routes
   {
     path: '/login',
     element: <Login />,
   },
   {
     path: '/unauthorized',
-    element: <Unauthorized />,
+    element: <UnauthorizedPage />,
   },
+
+  // Protected routes
   {
     path: '/',
     element: <DashboardLayout />,
@@ -33,50 +38,69 @@ export const router = createBrowserRouter([
         index: true,
         element: <Navigate to="/dashboard" replace />,
       },
-      // Protected Routes
+
+      // Routes accessible by all authenticated users
       {
-        element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.USER, ROLES.MANAGER, ROLES.LIBRARIAN, ROLES.STAFF, ROLES.STUDENT]} />, // Allowing all authenticated for common dashboard for now, or refine
+        element: <ProtectedRoute allowedRoles={Object.values(ROLES)} />,
         children: [
           {
             path: 'dashboard',
             element: <Dashboard />,
           },
-          {
-            path: 'orders',
-            element: <Orders />,
-          },
-          {
-            path: 'reports',
-            element: <Reports />,
-          },
-          {
-            path: 'reports/sales',
-            element: <Reports />,
-          },
-          {
-            path: 'reports/traffic',
-            element: <Reports />,
-          },
-          {
-            path: 'integrations',
-            element: <Integrations />,
-          },
+          // {
+          //   path: 'books',
+          //   element: <Books />,
+          // },
+          // {
+          //   path: 'borrowings',
+          //   element: <Borrowings />,
+          // },
         ],
       },
-      // Admin Only Routes
+
+      // Admin and Manager only
       {
-        element: <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />,
+        element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]} />,
         children: [
           {
             path: 'users',
             element: <Users />,
           },
           {
+            path: 'reports',
+            element: <Reports />,
+          },
+        ],
+      },
+
+      // Admin only
+      {
+        element: <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />,
+        children: [
+          {
             path: 'settings',
             element: <Settings />,
           },
         ],
       },
+
+      // Librarian and above
+      {
+        element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.LIBRARIAN]} />,
+        children: [
+          {
+            path: 'borrowings/manage',
+            element: <div>Manage Borrowings</div>,
+          },
+        ],
+      },
     ],
   },
+
+  // 404 route
+  {
+    path: '*',
+    element: <Navigate to="/dashboard" replace />,
+  },
 ]);
+

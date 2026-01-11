@@ -1,11 +1,10 @@
 
-// ==================== UPDATED AUTH SLICE ====================
+// ==================== UPDATED AUTH SLICE WITH SELECTORS ====================
 // store/authSlice.js
 
 import { createSlice } from '@reduxjs/toolkit';
-import { setStorage, getStorage, removeStorage, STORAGE_KEYS } from '../utils/storage';
+import { setStorage, getStorage, removeStorage, STORAGE_KEYS } from '../../utils/storage';
 
-// Load initial state from localStorage
 const loadAuthFromStorage = () => {
     const savedAuth = getStorage(STORAGE_KEYS.AUTH_STATE);
     if (savedAuth) {
@@ -43,7 +42,6 @@ const authSlice = createSlice({
             state.token = action.payload.token;
             state.error = null;
 
-            // Save to localStorage
             setStorage(STORAGE_KEYS.AUTH_STATE, {
                 user: action.payload.user,
                 token: action.payload.token,
@@ -62,14 +60,12 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = null;
 
-            // Clear from localStorage
             removeStorage(STORAGE_KEYS.AUTH_STATE);
             removeStorage(STORAGE_KEYS.AUTH_TOKEN);
         },
         updateUser: (state, action) => {
             state.user = { ...state.user, ...action.payload };
 
-            // Update in localStorage
             const currentAuth = getStorage(STORAGE_KEYS.AUTH_STATE) || {};
             setStorage(STORAGE_KEYS.AUTH_STATE, {
                 ...currentAuth,
@@ -91,4 +87,20 @@ export const {
     clearError,
 } = authSlice.actions;
 
+// Selectors
+// Selectors with meaningful naming conventions
+export const selectAuth = (state) => state.auth;
+export const selectAuthUser = (state) => state.auth.user;
+export const selectAuthIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectAuthToken = (state) => state.auth.token;
+export const selectAuthIsLoading = (state) => state.auth.loading;
+export const selectAuthError = (state) => state.auth.error;
+export const selectAuthUserRole = (state) => state.auth.user?.role;
+export const selectAuthUserName = (state) => state.auth.user?.name;
+export const selectAuthUserEmail = (state) => state.auth.user?.email;
+export const selectAuthUserId = (state) => state.auth.user?.id;
+
+// Derived selectors
+export const selectAuthHasError = (state) => !!state.auth.error;
+export const selectAuthIsReady = (state) => !state.auth.loading && state.auth.isAuthenticated;
 export default authSlice.reducer;

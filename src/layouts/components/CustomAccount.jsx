@@ -12,6 +12,8 @@ import {
   useTheme,
   alpha,
   Chip,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -20,12 +22,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SecurityIcon from '@mui/icons-material/Security';
 import PaymentIcon from '@mui/icons-material/Payment';
 import LoginIcon from '@mui/icons-material/Login';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import StarIcon from '@mui/icons-material/Star';
 
 /**
- * CustomAccount - Modern account component with creative styling
+ * CustomAccount - Compact account component with avatar-only display
  */
 function CustomAccount({ session, onSignIn, onSignOut }) {
   const theme = useTheme();
@@ -62,30 +63,37 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
     return gradients[index];
   };
 
-  // Signed out state
+  // Get initials from name
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  // Signed out state - Compact button
   if (!session || !session.user) {
     return (
-      <Button
-        variant="contained"
-        size="small"
-        startIcon={<LoginIcon />}
-        onClick={onSignIn}
-        sx={{
-          borderRadius: '12px',
-          textTransform: 'none',
-          px: 2.5,
-          py: 0.8,
-          fontWeight: 600,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-          '&:hover': {
-            boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            transform: 'translateY(-1px)',
-          },
-        }}
-      >
-        Sign In
-      </Button>
+      <Tooltip title="Sign In" arrow>
+        <IconButton
+          onClick={onSignIn}
+          sx={{
+            width: 40,
+            height: 40,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            color: '#fff',
+            '&:hover': {
+              background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <LoginIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
     );
   }
 
@@ -93,89 +101,60 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
 
   return (
     <>
-      {/* Account Button */}
-      <Box
-        onClick={handleClick}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          cursor: 'pointer',
-          padding: '6px 12px 6px 6px',
-          borderRadius: '16px',
-          backdropFilter: 'blur(10px)',
-          backgroundColor: alpha(theme.palette.background.paper, isDark ? 0.2 : 0.6),
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.15)}`,
-            transform: 'translateY(-1px)',
-          },
-        }}
-      >
-        {/* Avatar with gradient border */}
-        <Box
+      {/* Compact Avatar Button */}
+      <Tooltip title={user.name || 'Account'} arrow>
+        <IconButton
+          onClick={handleClick}
           sx={{
+            p: 0,
             position: 'relative',
-            padding: '2px',
-            borderRadius: '12px',
-            background: getAvatarGradient(user.name),
+            '&:hover': {
+              transform: 'scale(1.05)',
+            },
+            transition: 'transform 0.2s ease',
           }}
         >
-          <Avatar
-            src={user.image}
-            alt={user.name}
+          {/* Avatar with gradient border */}
+          <Box
             sx={{
-              width: 34,
-              height: 34,
-              borderRadius: '10px',
-              border: `2px solid ${theme.palette.background.paper}`,
-              fontSize: '0.9rem',
-              fontWeight: 700,
+              position: 'relative',
+              padding: '3px',
+              borderRadius: '50%',
               background: getAvatarGradient(user.name),
             }}
           >
-            {user.name?.charAt(0).toUpperCase()}
-          </Avatar>
-          {/* Online indicator */}
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-              border: `2px solid ${theme.palette.background.paper}`,
-              boxShadow: '0 0 8px rgba(76, 175, 80, 0.5)',
-            }}
-          />
-        </Box>
-
-        {/* User info */}
-        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
-              {user.name}
-            </Typography>
-            <VerifiedIcon sx={{ fontSize: 14, color: '#2196f3' }} />
+            <Avatar
+              src={user.image}
+              alt={user.name}
+              sx={{
+                width: 36,
+                height: 36,
+                border: `2px solid ${theme.palette.background.paper}`,
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                background: getAvatarGradient(user.name),
+              }}
+            >
+              {getInitials(user.name)}
+            </Avatar>
+            
+            {/* Online indicator */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 2,
+                right: 2,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                border: `2px solid ${theme.palette.background.paper}`,
+                boxShadow: '0 0 8px rgba(76, 175, 80, 0.6)',
+              }}
+            />
           </Box>
-          <Typography variant="caption" color="text.secondary" lineHeight={1} sx={{ fontSize: '0.68rem' }}>
-            {user.role || 'User'}
-          </Typography>
-        </Box>
-
-        <KeyboardArrowDownIcon
-          sx={{
-            fontSize: 18,
-            color: theme.palette.text.secondary,
-            transition: 'transform 0.2s',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        />
-      </Box>
+        </IconButton>
+      </Tooltip>
 
       {/* Account Menu */}
       <Menu
@@ -187,23 +166,25 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
           paper: {
             elevation: 0,
             sx: {
-              width: 300,
-              mt: 1.5,
+              width: 240,
+              mt: 1,
               overflow: 'visible',
-              borderRadius: 3,
+              borderRadius: 2,
               backdropFilter: 'blur(20px)',
-              backgroundColor: alpha(theme.palette.background.paper, isDark ? 0.9 : 0.95),
+              backgroundColor: alpha(theme.palette.background.paper, isDark ? 0.95 : 0.98),
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: `0 20px 40px ${alpha('#000', 0.15)}`,
+              boxShadow: isDark
+                ? `0 4px 20px ${alpha('#000', 0.4)}`
+                : `0 4px 20px ${alpha('#000', 0.1)}`,
               '&::before': {
                 content: '""',
                 display: 'block',
                 position: 'absolute',
                 top: 0,
-                right: 24,
-                width: 12,
-                height: 12,
-                bgcolor: alpha(theme.palette.background.paper, isDark ? 0.9 : 0.95),
+                right: 14,
+                width: 8,
+                height: 8,
+                bgcolor: alpha(theme.palette.background.paper, isDark ? 0.95 : 0.98),
                 transform: 'translateY(-50%) rotate(45deg)',
                 zIndex: 0,
                 border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -216,21 +197,22 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {/* Header with User Info */}
+        {/* Compact Header with User Info */}
         <Box
           sx={{
-            px: 2.5,
-            py: 2,
+            px: 1.5,
+            py: 1.5,
             background: isDark
-              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
-              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+            {/* Avatar */}
             <Box
               sx={{
-                padding: '3px',
-                borderRadius: '16px',
+                padding: '2px',
+                borderRadius: '10px',
                 background: getAvatarGradient(user.name),
               }}
             >
@@ -238,38 +220,52 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
                 src={user.image}
                 alt={user.name}
                 sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: '14px',
-                  border: `3px solid ${theme.palette.background.paper}`,
-                  fontSize: '1.2rem',
+                  width: 38,
+                  height: 38,
+                  borderRadius: '8px',
+                  border: `2px solid ${theme.palette.background.paper}`,
+                  fontSize: '0.9rem',
                   fontWeight: 700,
                   background: getAvatarGradient(user.name),
                 }}
               >
-                {user.name?.charAt(0).toUpperCase()}
+                {getInitials(user.name)}
               </Avatar>
             </Box>
-            <Box sx={{ flex: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="subtitle1" fontWeight={700}>
+
+            {/* User Info */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={700}
+                  noWrap
+                  sx={{ fontSize: '0.85rem' }}
+                >
                   {user.name}
                 </Typography>
-                <VerifiedIcon sx={{ fontSize: 16, color: '#2196f3' }} />
+                {user.verified && (
+                  <VerifiedIcon sx={{ fontSize: 13, color: '#2196f3', flexShrink: 0 }} />
+                )}
               </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                sx={{ fontSize: '0.7rem', display: 'block', lineHeight: 1.4 }}
+              >
                 {user.email}
               </Typography>
               <Chip
-                icon={<StarIcon sx={{ fontSize: '14px !important' }} />}
+                icon={<StarIcon sx={{ fontSize: '11px !important' }} />}
                 label={user.role || 'User'}
                 size="small"
                 sx={{
-                  mt: 0.5,
-                  height: 22,
-                  fontSize: '0.68rem',
+                  mt: 0.4,
+                  height: 18,
+                  fontSize: '0.6rem',
                   fontWeight: 600,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.2)} 0%, ${alpha(theme.palette.warning.light, 0.1)} 100%)`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.15)} 0%, ${alpha(theme.palette.warning.light, 0.08)} 100%)`,
                   color: theme.palette.warning.dark,
                   '& .MuiChip-icon': {
                     color: theme.palette.warning.main,
@@ -282,83 +278,76 @@ function CustomAccount({ session, onSignIn, onSignOut }) {
 
         <Divider />
 
-        {/* Menu Items */}
-        <Box sx={{ py: 1 }}>
+        {/* Menu Items - Compact */}
+        <Box sx={{ py: 0.5 }}>
           <MenuItem
-            onClick={handleClose}
             sx={{
-              py: 1.2,
-              px: 2.5,
+              py: 0.7,
+              px: 1.5,
+              borderRadius: 1,
+              mx: 0.5,
+              minHeight: 'auto',
               '&:hover': {
                 backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                '& .menu-icon': {
+                '& .MuiListItemIcon-root': {
                   color: theme.palette.primary.main,
                 },
               },
             }}
           >
-            <ListItemIcon>
-              <PersonIcon className="menu-icon" fontSize="small" sx={{ transition: 'color 0.2s' }} />
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <PersonIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText>
-              <Typography variant="body2" fontWeight={500}>My Profile</Typography>
+              <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.8rem' }}>
+                My Profile
+              </Typography>
             </ListItemText>
           </MenuItem>
 
-          <MenuItem onClick={handleClose} sx={{ py: 1.2, px: 2.5, '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) } }}>
-            <ListItemIcon>
-              <AccountCircleIcon fontSize="small" />
+          <MenuItem
+            sx={{
+              py: 0.7,
+              px: 1.5,
+              borderRadius: 1,
+              mx: 0.5,
+              minHeight: 'auto',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                '& .MuiListItemIcon-root': {
+                  color: theme.palette.primary.main,
+                },
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <SettingsIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText>
-              <Typography variant="body2" fontWeight={500}>Account Settings</Typography>
-            </ListItemText>
-          </MenuItem>
-
-          <MenuItem onClick={handleClose} sx={{ py: 1.2, px: 2.5, '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) } }}>
-            <ListItemIcon>
-              <SecurityIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>
-              <Typography variant="body2" fontWeight={500}>Security</Typography>
-            </ListItemText>
-          </MenuItem>
-
-          <MenuItem onClick={handleClose} sx={{ py: 1.2, px: 2.5, '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) } }}>
-            <ListItemIcon>
-              <PaymentIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>
-              <Typography variant="body2" fontWeight={500}>Billing</Typography>
-            </ListItemText>
-          </MenuItem>
-
-          <Divider sx={{ my: 1 }} />
-
-          <MenuItem onClick={handleClose} sx={{ py: 1.2, px: 2.5, '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) } }}>
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>
-              <Typography variant="body2" fontWeight={500}>Settings</Typography>
+              <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.8rem' }}>
+                Settings
+              </Typography>
             </ListItemText>
           </MenuItem>
         </Box>
 
-        <Divider />
+        <Divider sx={{ my: 0.5 }} />
 
-        {/* Sign Out */}
-        <Box sx={{ p: 1.5 }}>
+        {/* Sign Out - Compact */}
+        <Box sx={{ p: 0.75 }}>
           <Button
             fullWidth
             variant="outlined"
             color="error"
-            startIcon={<LogoutIcon />}
+            startIcon={<LogoutIcon sx={{ fontSize: 16 }} />}
             onClick={handleSignOut}
+            size="small"
             sx={{
-              borderRadius: 2,
+              borderRadius: 1.5,
               textTransform: 'none',
               fontWeight: 600,
-              py: 1,
+              py: 0.6,
+              fontSize: '0.8rem',
               borderColor: alpha(theme.palette.error.main, 0.3),
               '&:hover': {
                 backgroundColor: alpha(theme.palette.error.main, 0.08),
